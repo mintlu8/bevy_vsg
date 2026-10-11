@@ -1,2 +1,2 @@
 mod parsing;
-pub use parsing::parse_file;
+pub use parsing::{ParseError, parse_file};

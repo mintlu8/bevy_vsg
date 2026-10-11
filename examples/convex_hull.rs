@@ -33,7 +33,7 @@ pub struct ConvexHull {
 
 impl MaterialExtension for ConvexHull {
     fn vertex_shader() -> ShaderRef {
-        ShaderRef::Handle(CONVEX_HULL_VERTEX_SHADER.get().cloned().unwrap())
+        ShaderRef::Path("convex_hull.wesl".into())
     }
     fn specialize(
         _: &bevy::pbr::MaterialExtensionPipeline,
@@ -70,12 +70,6 @@ fn main() {
                     .add_custom_vertex_attribute("CONVEX_HULL_NORMAL", CONVEX_HULL_NORMAL),
             ),
         )
-        .add_plugins(|app: &mut App| {
-            let _ = CONVEX_HULL_VERTEX_SHADER.set(app.world_mut().add_asset(Shader::from_wesl(
-                include_str!("convex_hull.wesl"),
-                "convex_hull.wesl",
-            )));
-        })
         .add_plugins(MaterialPlugin::<
             ExtendedMaterial<StandardMaterial, ConvexHull>,
         >::default())

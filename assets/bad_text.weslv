@@ -1,0 +1,3 @@
+4D
+input:
+@location(20) ch_normal: vec3<f32>,

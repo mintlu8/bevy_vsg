@@ -1,0 +1,28 @@
+3D
+pipe:
+@location(20) magic_number: f32,
+
+fragment:
+@group(constants::MATERIAL_BIND_GROUP) @binding(1) var texture: texture_2d<f32>;
+@group(constants::MATERIAL_BIND_GROUP) @binding(2) var texture_sampler: sampler;
+
+@fragment
+fn fragment(
+    input: VertexOutput,
+) -> @location(0) vec4<f32> {
+    var color = textureSample(texture, texture_sampler, input.uv);
+
+    if input.magic_number == 0.0 {
+        color.g = 0.0;
+        color.b = 0.0;
+    }
+    if input.magic_number == 1.0 {
+        color.r = 0.0;
+        color.b = 0.0;
+    }
+    if input.magic_number == 2.0 {
+        color.r = 0.0;
+        color.g = 0.0;
+    }
+    return color;
+}

@@ -35,12 +35,12 @@ impl Display for ParseError<'_> {
         match self {
             ParseError::ExpectedCommand { file, line } => {
                 let line_num = line_num(file, line);
-                writeln!(f, "Expected Command:")?;
+                writeln!(f, "Error: expected command")?;
                 writeln!(f, "   |\n{line_num:<3}| {line}\n   |")
             }
             ParseError::UnknownCommand { file, line } => {
                 let line_num = line_num(file, line);
-                writeln!(f, "Unknown Command:\n")?;
+                writeln!(f, "Error: unknown command")?;
                 writeln!(f, "   |\n{line_num:<3}| {line}\n   |")
             }
         }
@@ -102,8 +102,6 @@ pub fn parse_file(file: &str) -> Result<String, ParseError<'_>> {
         }
         if content.ends_with(':') {
             match content {
-                "2d" | "2D" if division == Division::None => d2 = true,
-                "3d" | "3D" if division == Division::None => d2 = false,
                 "input:" => {
                     division = Division::Input;
                 }
@@ -122,10 +120,12 @@ pub fn parse_file(file: &str) -> Result<String, ParseError<'_>> {
                 "fragment:" => {
                     division = Division::Fragment;
                 }
-                _ => return Err(ParseError::ExpectedCommand { file, line }),
+                _ => return Err(ParseError::UnknownCommand { file, line }),
             }
         } else {
             match division {
+                Division::None if content == "2d" || content == "2D" => d2 = true,
+                Division::None if content == "3d" || content == "3D" => d2 = false,
                 Division::None => return Err(ParseError::ExpectedCommand { file, line }),
                 Division::Input => {
                     input_fields.push_indented_line_comma(line);
