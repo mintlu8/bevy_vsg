@@ -4,6 +4,7 @@ import bevy_pbr::render::{
     skinning,
     morph::{morph_position, morph_normal, morph_tangent},
     view_transformations::position_world_to_clip,
+    forward_io::VertexOutput as StdVertexOutput,
 };
 
 struct Vertex {
@@ -153,6 +154,26 @@ fn morph_vertex(vertex_in: Vertex, instance_index: u32) -> Vertex {
         vertex.tangent += vec4(weight * morph_tangent(vertex_index, i, morph_descriptor_index), 0.0);
     }
     return vertex;
+}
+
+fn into_std_vertex(in: VertexOutput) -> StdVertexOutput {
+    var out: StdVertexOutput;
+    out.position = in.position;
+    out.world_position = in.world_position;
+    out.world_normal = in.world_normal;
+    @if(VERTEX_UVS_A)
+    out.uv = in.uv;
+    @if(VERTEX_UVS_B)
+    out.uv_b = in.uv_b;
+    @if(VERTEX_TANGENTS)
+    out.world_tangent = in.world_tangent;
+    @if(VERTEX_COLORS)
+    out.color = in.color;
+    @if(VERTEX_OUTPUT_INSTANCE_INDEX)
+    out.instance_index = in.instance_index;
+    @if(VISIBILITY_RANGE_DITHER)
+    out.visibility_range_dither = in.visibility_range_dither;
+    return out;
 }
 
 @vertex

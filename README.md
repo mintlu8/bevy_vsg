@@ -1,6 +1,6 @@
 # bevy_vsg
 
-Command line tool for generating vertex shaders for current bevy.
+Command line tool for generating vertex shaders for bevy.
 
 ## Example
 
@@ -76,7 +76,16 @@ Each line ending with `:` is a command, otherwise input for the previous command
 
 * `fragment:`
   Optionally defines a fragment shader.
-  A generated function `into_std_vertex` is provided to convert `VertexOutput` into the standard bevy one.
+  A generated function `into_std_vertex` is provided to convert `VertexOutput` into the standard bevy one 
+  (imported as `StdVertexOutput`).
   This can be used with functions like `pbr_input_from_standard_material`.
 
   This is not preferred if `VertexOutput` is not changed as you use a regular `.wesl` file.
+
+## Cli
+
+```sh
+bevy_vsg my_shader.txt
+```
+
+This can take any file extension except `.wesl` and generates `my_shader.wesl` next to the file.

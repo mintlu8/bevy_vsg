@@ -19,7 +19,7 @@ fn main() {
 
     let content = std::str::from_utf8(&file).unwrap();
 
-    let output = parse_file(content);
+    let output = parse_file(content).unwrap();
 
     fs::write(path, output).unwrap();
 }

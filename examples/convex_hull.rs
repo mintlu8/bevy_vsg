@@ -71,10 +71,10 @@ fn main() {
             ),
         )
         .add_plugins(|app: &mut App| {
-            let _ = CONVEX_HULL_VERTEX_SHADER.set(
-                app.world_mut()
-                    .add_asset(Shader::from_wesl(include_str!("convex_hull.wesl"), "convex_hull.wesl")),
-            );
+            let _ = CONVEX_HULL_VERTEX_SHADER.set(app.world_mut().add_asset(Shader::from_wesl(
+                include_str!("convex_hull.wesl"),
+                "convex_hull.wesl",
+            )));
         })
         .add_plugins(MaterialPlugin::<
             ExtendedMaterial<StandardMaterial, ConvexHull>,

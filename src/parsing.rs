@@ -1,8 +1,10 @@
+use std::{error::Error, fmt::Display};
+
 pub const TEMPLATE2D: &str = include_str!("./template2d.wesl.template");
 pub const TEMPLATE3D: &str = include_str!("./template3d.wesl.template");
 
 #[derive(PartialEq, Eq)]
-pub enum Division {
+enum Division {
     None,
     Input,
     Output,
@@ -12,7 +14,42 @@ pub enum Division {
     Fragment,
 }
 
-pub fn parse_name(s: &str) -> Option<&str> {
+#[derive(Debug, Clone, Copy)]
+pub enum ParseError<'t> {
+    ExpectedCommand { file: &'t str, line: &'t str },
+    UnknownCommand { file: &'t str, line: &'t str },
+}
+
+impl Display for ParseError<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        fn line_num(file: &str, line: &str) -> usize {
+            let Some(range) = file.substr_range(line) else {
+                return 0;
+            };
+            let Some(s) = file.as_bytes().get(0..range.start) else {
+                return 0;
+            };
+            s.iter().filter(|x| **x == b'\n').count()
+        }
+
+        match self {
+            ParseError::ExpectedCommand { file, line } => {
+                let line_num = line_num(file, line);
+                writeln!(f, "Expected Command:")?;
+                writeln!(f, "   |\n{line_num:<3}| {line}\n   |")
+            }
+            ParseError::UnknownCommand { file, line } => {
+                let line_num = line_num(file, line);
+                writeln!(f, "Unknown Command:\n")?;
+                writeln!(f, "   |\n{line_num:<3}| {line}\n   |")
+            }
+        }
+    }
+}
+
+impl Error for ParseError<'_> {}
+
+fn parse_name(s: &str) -> Option<&str> {
     let s = s.as_bytes();
     let colon = s.iter().position(|x| *x == b':')?;
     let s = s.get(0..colon)?.trim_ascii_end();
@@ -48,7 +85,7 @@ impl PushString for String {
     }
 }
 
-pub fn parse_file(s: &str) -> String {
+pub fn parse_file(file: &str) -> Result<String, ParseError<'_>> {
     let mut d2 = false;
     let mut division = Division::None;
     let mut input_fields = String::new();
@@ -58,38 +95,44 @@ pub fn parse_file(s: &str) -> String {
     let mut preprocess_buffer = String::new();
     let mut postprocess_buffer = String::new();
     let mut fragment_buffer = String::new();
-    for line in s.split('\n') {
-        if line.starts_with("//") {
+    for line in file.split('\n') {
+        let content = line.trim();
+        if content.is_empty() || content.starts_with("//") {
             continue;
         }
-        match line.trim() {
-            "" => continue,
-            "2d" | "2D" if division == Division::None => d2 = true,
-            "3d" | "3D" if division == Division::None => d2 = false,
-            "input:" => {
-                division = Division::Input;
+        if content.ends_with(':') {
+            match content {
+                "2d" | "2D" if division == Division::None => d2 = true,
+                "3d" | "3D" if division == Division::None => d2 = false,
+                "input:" => {
+                    division = Division::Input;
+                }
+                "output:" => {
+                    division = Division::Output;
+                }
+                "pipe:" => {
+                    division = Division::Pipe;
+                }
+                "preprocess:" => {
+                    division = Division::Preprocess;
+                }
+                "postprocess:" => {
+                    division = Division::PostProcess;
+                }
+                "fragment:" => {
+                    division = Division::Fragment;
+                }
+                _ => return Err(ParseError::ExpectedCommand { file, line }),
             }
-            "output:" => {
-                division = Division::Output;
-            }
-            "pipe:" => {
-                division = Division::Pipe;
-            }
-            "preprocess:" => {
-                division = Division::Preprocess;
-            }
-            "postprocess:" => {
-                division = Division::PostProcess;
-            }
-            "fragment:" => {
-                division = Division::Fragment;
-            }
-            _ => match division {
-                Division::None => (),
+        } else {
+            match division {
+                Division::None => return Err(ParseError::ExpectedCommand { file, line }),
                 Division::Input => {
                     input_fields.push_indented_line_comma(line);
                     if let Some(name) = parse_name(line) {
-                        decompress_buffer.push_str(&format!("    uncompressed_vertex.{name} = vertex_in.{name};\n"));
+                        decompress_buffer.push_indented_line(&format!(
+                            "uncompressed_vertex.{name} = vertex_in.{name};"
+                        ));
                     }
                 }
                 Division::Output => {
@@ -99,8 +142,10 @@ pub fn parse_file(s: &str) -> String {
                     input_fields.push_indented_line_comma(line);
                     output_fields.push_indented_line_comma(line);
                     if let Some(name) = parse_name(line) {
-                        decompress_buffer.push_str(&format!("    uncompressed_vertex.{name} = vertex_in.{name};\n"));
-                        pipe_buffer.push_str(&format!("    out.{name} = vertex.{name};\n"));
+                        decompress_buffer.push_indented_line(&format!(
+                            "uncompressed_vertex.{name} = vertex_in.{name};"
+                        ));
+                        pipe_buffer.push_indented_line(&format!("out.{name} = vertex.{name};"));
                     }
                 }
                 Division::Preprocess => {
@@ -112,7 +157,7 @@ pub fn parse_file(s: &str) -> String {
                 Division::Fragment => {
                     fragment_buffer.push_line(line);
                 }
-            },
+            }
         }
     }
 
@@ -150,5 +195,5 @@ pub fn parse_file(s: &str) -> String {
         template.push_str(&fragment_buffer);
     }
 
-    template
+    Ok(template)
 }

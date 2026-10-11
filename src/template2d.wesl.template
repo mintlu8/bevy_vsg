@@ -1,6 +1,7 @@
 import bevy_sprite_render::mesh2d::{
     functions as mesh_functions,
     view_bindings::view,
+    vertex_output::VertexOutput as StdVertexOutput,
 };
 
 struct Vertex {
@@ -86,6 +87,19 @@ fn decompress_vertex(vertex_in: MaybeCompressedVertex, instance_index: u32) -> V
     return uncompressed_vertex;
 }
 
+fn into_std_vertex(in: VertexOutput) -> StdVertexOutput {
+    var out: StdVertexOutput;
+    out.position = in.position;
+    out.world_position = in.world_position;
+    out.world_normal = in.world_normal;
+    out.uv = in.uv;
+    @if(VERTEX_TANGENTS)
+    out.world_tangent = in.world_tangent;
+    @if(VERTEX_COLORS)
+    out.color = in.color;
+    out.instance_index = in.instance_index;
+    return out;
+}
 
 @vertex
 fn vertex(vertex: MaybeCompressedVertex) -> VertexOutput {
