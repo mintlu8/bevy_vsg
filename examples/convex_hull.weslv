@@ -1,0 +1,11 @@
+3D
+input:
+@location(20) ch_normal: vec3<f32>,
+
+preprocess:
+@group(constants::MATERIAL_BIND_GROUP) @binding(100) var<uniform> size: f32;
+fn preprocess(input: Vertex) -> Vertex {
+    var result = input;
+    result.position += result.ch_normal * size;
+    return result;
+}

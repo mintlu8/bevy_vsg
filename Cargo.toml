@@ -1,0 +1,9 @@
+[package]
+name = "bevy_vsg"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+
+[dev-dependencies]
+bevy = "0.20.0"
