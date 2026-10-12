@@ -15,7 +15,6 @@ pub static ATTR_MAGIC_NUMBER3: MeshVertexAttribute =
 pub static ATTR_MAGIC_NUMBER4: MeshVertexAttribute =
     MeshVertexAttribute::new("Magic_Number_4", 504, VertexFormat::Float32);
 
-
 pub fn main() {
     App::new()
         .insert_resource(GlobalAmbientLight {
@@ -49,14 +48,12 @@ impl MaterialExtension for RenderMagicNumber {
         layout: &bevy::mesh::MeshVertexBufferLayoutRef,
         _: bevy::pbr::MaterialExtensionKey<Self>,
     ) -> std::result::Result<(), bevy::render::render_resource::SpecializedMeshPipelineError> {
-        let vertex_layout = layout
-            .0
-            .get_layout(&[
-                ATTR_MAGIC_NUMBER1.at_shader_location(20),
-                ATTR_MAGIC_NUMBER2.at_shader_location(21),
-                ATTR_MAGIC_NUMBER3.at_shader_location(22),
-                ATTR_MAGIC_NUMBER4.at_shader_location(23),
-            ])?;
+        let vertex_layout = layout.0.get_layout(&[
+            ATTR_MAGIC_NUMBER1.at_shader_location(20),
+            ATTR_MAGIC_NUMBER2.at_shader_location(21),
+            ATTR_MAGIC_NUMBER3.at_shader_location(22),
+            ATTR_MAGIC_NUMBER4.at_shader_location(23),
+        ])?;
         descriptor.vertex.buffers[0]
             .attributes
             .extend(vertex_layout.attributes);

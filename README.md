@@ -62,6 +62,23 @@ Each line ending with `:` is a command, otherwise input for the previous command
   }
   ```
 
+  You can add other functions, imports or bindings in these sections,
+  as long as a function named `preprocess` exists with the correct signature.
+
+  ```wesl
+  import bevy_sprite_render::mesh2d::view_bindings::view;
+  @group(constants::MATERIAL_BIND_GROUP) @binding(1) var texture: texture_2d<f32>;
+  @group(constants::MATERIAL_BIND_GROUP) @binding(2) var texture_sampler: sampler;
+
+  fn preprocess(vertex: Vertex) -> Vertex {
+    ..
+  }
+
+  fn util(a: f32) -> f32 {
+    ..
+  }
+  ```
+
 * `postprocess:`
   Optionally define a function that transforms `VertexOutput` after all the standard procedure done
   in the bevy vertex shader.
@@ -76,11 +93,19 @@ Each line ending with `:` is a command, otherwise input for the previous command
 
 * `fragment:`
   Optionally defines a fragment shader.
-  A generated function `into_std_vertex` is provided to convert `VertexOutput` into the standard bevy one 
+  A generated function `into_std_vertex` is provided to convert `VertexOutput` into the standard bevy one
   (imported as `StdVertexOutput`).
   This can be used with functions like `pbr_input_from_standard_material`.
 
-  This is not preferred if `VertexOutput` is not changed as you use a regular `.wesl` file.
+  This is not preferred if `VertexOutput` is not changed as you can extend `StandardMaterial`
+  or use a regular `.wesl` file as the fragment shader.
+
+  ```wgsl
+  @fragment
+  fn fragment(input: VertexOutput) -> @location(0) vec4<f32> {
+      ..
+  }
+  ```
 
 ## Cli
 

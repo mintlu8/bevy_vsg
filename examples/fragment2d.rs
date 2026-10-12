@@ -29,7 +29,6 @@ pub struct RenderMagicNumber {
     pub image: Handle<Image>,
 }
 
-
 impl Material2d for RenderMagicNumber {
     fn vertex_shader() -> ShaderRef {
         ShaderRef::Path("magic_number.wesl".into())
