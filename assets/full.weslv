@@ -1,0 +1,41 @@
+3D
+input:
+@location(20) magic_number1: f32,
+@location(21) magic_number2: f32,
+
+output:
+@location(20) magic_number1x: f32,
+@location(21) magic_number2x: f32,
+
+pipe: 
+@location(22) magic_number3: f32,
+@location(23) magic_number4: f32,
+
+fragment:
+@group(constants::MATERIAL_BIND_GROUP) @binding(1) var texture: texture_2d<f32>;
+@group(constants::MATERIAL_BIND_GROUP) @binding(2) var texture_sampler: sampler;
+
+preprocess:
+fn preprocess(v: Vertex) -> Vertex {
+    var vert = v;
+    let x = vert.position.x;
+    vert.position.x = vert.position.y;
+    vert.position.y = -x;
+    return vert;
+}
+
+postprocess:
+fn postprocess(input: Vertex, output: VertexOutput, world_from_local: mat4x4<f32>) -> VertexOutput {
+    var out = output;
+    out.magic_number1x = input.magic_number1;
+    out.magic_number2x = input.magic_number2;
+    return out;
+}
+
+@fragment
+fn fragment(
+    input: VertexOutput,
+) -> @location(0) vec4<f32> {
+    var color = textureSample(texture, texture_sampler, input.uv);
+    return color * vec4(input.magic_number1x, input.magic_number2x, input. magic_number3, input.magic_number4);
+}
