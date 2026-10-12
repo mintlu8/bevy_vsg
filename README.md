@@ -1,6 +1,6 @@
 # bevy_vsg
 
-Command line tool for generating vertex shaders for bevy.
+Command line tool for generating vertex shaders for bevy. Successor of `bevy_vertex_shader_generation` in the `wesl` era.
 
 ## Example
 
